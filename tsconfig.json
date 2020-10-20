@@ -9,9 +9,7 @@
     "sourceMap": true,
     "baseUrl": "./",
     "strict": true,
-    "allowSyntheticDefaultImports": true
-  },
-  "include": [
-    "packages/**/*"
-  ]
+    "allowSyntheticDefaultImports": true,
+    "lib": ["dom", "dom.iterable", "esnext"]
+  }
 }
