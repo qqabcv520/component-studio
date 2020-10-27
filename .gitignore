@@ -5,8 +5,6 @@
 /**/node_modules
 /npm-debug.log*
 /yarn-error.log
-/yarn.lock
-/package-lock.json
 
 # production
 /dist
@@ -14,7 +12,12 @@
 # misc
 .DS_Store
 
-
 # ide
 /.idea
 /.vscode
+
+# umi
+/**/src/.umi
+/**/src/.umi-production
+/**/src/.umi-test
+/**/.env.local

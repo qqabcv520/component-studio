@@ -6,7 +6,9 @@
     "packages/*"
   ],
   "scripts": {
-    "prettier": "prettier --write 'packages/**/*.{js,jsx,tsx,ts,less,md,json}'"
+    "start": "yarn workspaces run start",
+    "build": "yarn workspaces run build",
+    "prettier": "prettier --write \"packages/*/src/**/*\""
   },
   "gitHooks": {
     "pre-commit": "lint-staged"
