@@ -5,12 +5,10 @@
   "scripts": {
     "start": "umi dev",
     "build": "umi build",
-    "postinstall": "umi generate tmp",
     "test": "umi-test",
     "test:coverage": "umi-test --coverage"
   },
   "dependencies": {
-    "@ant-design/pro-layout": "^5.0.12",
     "@umijs/preset-react": "1.x",
     "@umijs/test": "^3.2.24",
     "react": "^16.12.0",
