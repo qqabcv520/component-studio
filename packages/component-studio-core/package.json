@@ -1,0 +1,7 @@
+{
+  "name": "component-studio-core",
+  "version": "0.0.1",
+  "description": "组件工作室核心依赖包",
+  "main": "index.js",
+  "license": "MIT"
+}
