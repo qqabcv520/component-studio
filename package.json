@@ -6,8 +6,8 @@
     "packages/*"
   ],
   "scripts": {
-    "start": "yarn workspaces run start",
-    "build": "yarn workspaces run build",
+    "start": "yarn workspace component-studio-ui run start",
+    "build": "yarn workspace component-studio-ui run build",
     "prettier": "prettier --write \"packages/*/src/**/*\""
   },
   "gitHooks": {
