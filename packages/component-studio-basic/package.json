@@ -2,6 +2,17 @@
   "name": "component-studio-basic",
   "version": "0.0.1",
   "description": "组件工作室基础组件",
+  "license": "MIT",
   "main": "index.js",
-  "license": "MIT"
+  "module": "dist/component-studio-basic.es.js",
+  "type": "src/index.ts",
+  "dependencies": {
+    "component-studio-core": "^0.0.1"
+  },
+  "files": [
+    "index.js",
+    "src/**/*.d.ts",
+    "dist",
+    "README.MD"
+  ]
 }
