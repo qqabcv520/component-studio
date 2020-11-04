@@ -14,5 +14,9 @@
     "src/**/*.d.ts",
     "dist",
     "README.MD"
-  ]
+  ],
+  "component-studio": {
+    "parsers": "src/index#parsers",
+    "components": "src/index#components"
+  }
 }
