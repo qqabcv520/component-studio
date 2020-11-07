@@ -11,11 +11,11 @@
   "dependencies": {
     "@umijs/preset-react": "1.x",
     "@umijs/test": "^3.2.24",
+    "classnames": "^2.2.6",
     "component-studio-basic": "^0.0.1",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "umi": "^3.2.24"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
