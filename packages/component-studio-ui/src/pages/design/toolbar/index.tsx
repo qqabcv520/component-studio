@@ -21,18 +21,18 @@ export interface ToolbarProps {}
 export const Toolbar: React.FC<ToolbarProps> = () => {
   return (
     <div className={styles.toolbar}>
-      <div className={styles.widgetWrapper}>
-        <Collapse>
-          <CollapsePanel>
+      <Collapse>
+        <CollapsePanel header={'基础组件'}>
+          <div className={styles.widgetWrapper}>
             <Widget name={'文本'} />
             <Widget name={'块容器'} />
             <Widget name={'图片'} />
             <Widget name={'按钮'} />
             <Widget name={'输入框'} />
             <Widget name={'表格'} />
-          </CollapsePanel>
-        </Collapse>
-      </div>
+          </div>
+        </CollapsePanel>
+      </Collapse>
     </div>
   );
 };

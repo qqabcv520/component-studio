@@ -9,8 +9,10 @@
     "test:coverage": "umi-test --coverage"
   },
   "dependencies": {
+    "@types/classnames": "^2.2.11",
     "@umijs/preset-react": "1.x",
     "@umijs/test": "^3.2.24",
+    "beautiful-react-hooks": "^0.31.0",
     "classnames": "^2.2.6",
     "component-studio-basic": "^0.0.1",
     "react": "^16.12.0",
