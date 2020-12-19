@@ -1,5 +1,5 @@
-import React from 'react';
 import { Parser } from 'component-studio-core';
+import React from 'react';
 
 export const components = [];
 

@@ -15,7 +15,7 @@ export interface CollapsePanelProps {
 }
 
 export const CollapsePanel: React.FC<CollapsePanelProps> = (props) => {
-  const { className = '' } = props;
+  // const { className = '' } = props;
 
   return (
     <div className={styles.collapse}>
@@ -26,7 +26,7 @@ export const CollapsePanel: React.FC<CollapsePanelProps> = (props) => {
 };
 
 export const Collapse: React.FC<CollapseProps> = (props) => {
-  const { className = '' } = props;
+  // const { className = '' } = props;
 
   return <div className={styles.collapse}>{props.children}</div>;
 };

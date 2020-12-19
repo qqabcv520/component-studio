@@ -10,5 +10,13 @@
     "src/**/*.d.ts",
     "dist",
     "README.MD"
-  ]
+  ],
+  "dependencies": {
+    "react": "*",
+    "react-dom": "*"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*"
+  }
 }

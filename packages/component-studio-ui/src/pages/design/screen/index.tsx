@@ -1,7 +1,10 @@
 import React, {
-  ReactNode,
+  ComponentClass,
+  createRef,
+  FunctionComponent,
+  MutableRefObject,
   useCallback,
-  useLayoutEffect,
+  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -32,38 +35,48 @@ export interface EditableProps {
 // }
 
 export interface ScreenProps {
-  editingWidget: ReactNode[];
+  editingWidget: Array<
+    | FunctionComponent<unknown & { wrapperRef?: MutableRefObject<Element | Text | null> }>
+    | ComponentClass<unknown & { wrapperRef?: MutableRefObject<Element | Text | null> }>
+  >;
 }
 
 export const Screen: React.FC<ScreenProps> = (props) => {
   const [target, setTarget] = useState<HTMLElement>();
+  const [elements, setElements] = useState<JSX.Element[]>();
   const coverRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      console.log(e.view);
-      console.log(e.type);
-      setTarget(e.target as HTMLElement);
-    },
-    [],
-  );
+  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    setTarget(e.target as HTMLElement);
+  }, []);
 
-  const { left = 0, top = 0, height = 0, width = 0 } =
-    target?.getBoundingClientRect() ?? {};
+  const { left = 0, top = 0, height = 0, width = 0 } = target?.getBoundingClientRect() ?? {};
   const { left: screenLeft = 0, top: screenTop = 0 } =
     screenRef.current?.getBoundingClientRect() ?? {};
-  console.log(left, top, screenLeft, screenTop);
+  // console.log(left, top, screenLeft, screenTop);
   const style = {
-    left: left - screenLeft + 'px',
-    top: top - screenTop + 'px',
-    height: height + 'px',
-    width: width + 'px',
+    left: `${left - screenLeft}px`,
+    top: `${top - screenTop}px`,
+    height: `${height}px`,
+    width: `${width}px`,
   };
+
+  useEffect(() => {
+    const elementAndRef = props.editingWidget.map((Comp) => {
+      const ref = createRef<Element | Text | null>();
+      return {
+        ref,
+        element: <Comp wrapperRef={ref} />,
+      };
+    });
+    setElements(elementAndRef.map((value) => value.element));
+    // const refSet = new Set(elementAndRef.map((value) =>  value.ref));
+  }, [props.editingWidget]);
 
   return (
     <div ref={screenRef} className={styles.screen} onMouseDown={onMouseDown}>
-      <div>{props.editingWidget}</div>
-      <div ref={coverRef} className={styles.cover} style={style}></div>
+      <div>{elements}</div>
+      <div ref={coverRef} className={styles.cover} style={style} />
     </div>
   );
 };

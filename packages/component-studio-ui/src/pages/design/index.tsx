@@ -1,19 +1,31 @@
-import React from 'react';
+import React, { ComponentClass, FC, FunctionComponent } from 'react';
 import '../../accets/style/index.less';
+import { componentWrapper, WrapperRefProps } from 'component-studio-core/src/interface/component';
 import styles from './index.less';
 import { Toolbar } from './toolbar';
 import { Header } from './header';
 import { Screen } from './screen';
 import { Menu } from './menu';
 
+export interface OtherComponentProps {
+  content: string;
+}
+
+export const OtherComponent: FC<OtherComponentProps> = (props: any) => {
+  return (
+    <div>
+      <h1>{props.content}123456</h1>
+      456789
+    </div>
+  );
+};
+
+const Test = componentWrapper(OtherComponent);
+
 export default () => {
-  const editingWidget = [
-    <input type="text" key={0} />,
-    <input type="checkbox" key={1} />,
-    <input type="radio" key={2} />,
-    <span key={3}> 123 </span>,
-    <span key={4}> 456 </span>,
-  ];
+  const editingWidget: Array<
+    FunctionComponent<any & WrapperRefProps> | ComponentClass<any & WrapperRefProps>
+  > = [Test];
   return (
     <div className={styles.main}>
       <Header />

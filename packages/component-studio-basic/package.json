@@ -7,7 +7,11 @@
   "module": "dist/component-studio-basic.es.js",
   "type": "src/index.ts",
   "dependencies": {
+    "react": "*",
     "component-studio-core": "^0.0.1"
+  },
+  "peerDependencies": {
+    "react": "*"
   },
   "files": [
     "index.js",
