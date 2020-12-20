@@ -5,4 +5,7 @@ export default defineConfig({
     type: 'none',
   },
   routes: [{ path: '/', component: '@/pages/design/index' }],
+  dva: {
+    immer: true,
+  },
 });
