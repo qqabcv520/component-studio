@@ -1,11 +1,11 @@
 const execa = require('execa');
-const { fuzzyMatchTarget, packagesName: allTargets } = require('./utils');
+const { fuzzyMatchTarget } = require('./utils');
 const args = require('minimist')(process.argv.slice(2));
 const target = args._.length
   ? fuzzyMatchTarget(args._)[0]
   : 'component-studio-ui';
 const sourceMap = args.sourcemap || args.s || true;
-const formats = args.format || args.f || 'cjs';
+const formats = args.format || args.f || 'es';
 
 if (target === 'component-studio-ui') {
   return execa('yarn', ['workspace', 'component-studio-ui', 'start'], {
