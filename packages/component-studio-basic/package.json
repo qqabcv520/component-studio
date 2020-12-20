@@ -5,7 +5,7 @@
   "license": "MIT",
   "main": "index.js",
   "module": "dist/component-studio-basic.es.js",
-  "type": "src/index.ts",
+  "type": "module",
   "dependencies": {
     "react": "*",
     "component-studio-core": "^0.0.1"

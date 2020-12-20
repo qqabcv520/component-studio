@@ -4,7 +4,8 @@
   "description": "组件工作室核心依赖包",
   "license": "MIT",
   "main": "index.js",
-  "module": "src/index.ts",
+  "module": "dist/component-studio-core.es.js",
+  "type": "module",
   "files": [
     "index.js",
     "src/**/*.d.ts",
