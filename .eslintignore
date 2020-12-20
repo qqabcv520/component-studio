@@ -1,0 +1,2 @@
+**/*.js
+!packages/*/src/**/*.{ts,tsx,js,jsx}
