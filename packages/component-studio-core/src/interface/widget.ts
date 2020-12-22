@@ -1,5 +1,18 @@
-import React, { Component, ComponentClass, FunctionComponent, MutableRefObject } from 'react';
+import {
+  Component,
+  ComponentClass,
+  createElement,
+  FunctionComponent,
+  MutableRefObject,
+} from 'react';
 import { findDOMNode } from 'react-dom';
+import { PropInfo } from './prop';
+
+export interface WidgetProp {
+  propName: string;
+  propType: PropInfo;
+  defaultValue?: unknown;
+}
 
 export type WidgetWrapperType<P = unknown> =
   | FunctionComponent<P & WrapperRefProps>
@@ -7,7 +20,8 @@ export type WidgetWrapperType<P = unknown> =
 
 export interface WidgetInfo<P = unknown> {
   widgetName: string;
-  widget: WidgetWrapperType<P>;
+  widgetProps: WidgetProp[];
+  widgetType: WidgetWrapperType<P>;
 }
 
 export interface WidgetGroup {
@@ -30,8 +44,15 @@ export function componentToWidget<P>(
       }
     }
 
+    componentDidUpdate() {
+      if (this.props.wrapperRef) {
+        // eslint-disable-next-line react/no-find-dom-node
+        this.props.wrapperRef.current = findDOMNode(this);
+      }
+    }
+
     render() {
-      return <Com {...this.props} />;
+      return createElement(Com, this.props);
     }
   };
 }

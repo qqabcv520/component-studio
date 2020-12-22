@@ -4,7 +4,7 @@ export default defineConfig({
   nodeModulesTransform: {
     type: 'none',
   },
-  routes: [{ path: '/', component: '@/pages/design/index' }],
+  routes: [{ path: '/', component: '@/pages/design-page/index' }],
   dva: {
     immer: true,
   },

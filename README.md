@@ -1,4 +1,4 @@
-# umi project
+# Component Studio
 
 ## Getting Started
 

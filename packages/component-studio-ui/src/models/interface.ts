@@ -1,33 +1,27 @@
-import { Effect, ImmerReducer, Reducer } from 'umi';
+import { Effect, ImmerReducer, Subscription, Reducer } from 'umi';
 
-export type ReducersType<S> = {
-  [key: string]: Reducer<S>;
-};
-
-export type ModelType<S, E> = {
+export type ModelType<S> = {
   state: S;
-  effects?: {
-    [key in keyof E]?: Effect;
+  reducers?: {
+    [key: string]: Reducer<S>;
   };
-  reducers?: ReducersType<S>;
+  effects?: {
+    [key: string]: Effect;
+  };
+  subscriptions?: {
+    [key: string]: Subscription;
+  };
 };
 
-export type ImmerReducersType<S> = {
-  [key: string]: ImmerReducer<S>;
-};
-
-export type ImmerModelType<S, E> = {
+export type ImmerModelType<S> = {
   state: S;
-  effects?: {
-    [key in keyof E]?: Effect;
+  reducers?: {
+    [key: string]: ImmerReducer<S>;
   };
-  reducers?: ImmerReducersType<S>;
+  effects?: {
+    [key: string]: Effect;
+  };
+  subscriptions?: {
+    [key: string]: Subscription;
+  };
 };
-
-export function defineModel<S, E>(model: ModelType<S, E>) {
-  return model;
-}
-
-export function defineImmerModel<S, E>(model: ImmerModelType<S, E>) {
-  return model;
-}

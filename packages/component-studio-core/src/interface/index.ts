@@ -1,2 +1,2 @@
 export * from './widget';
-export * from './parser';
+export * from './prop';

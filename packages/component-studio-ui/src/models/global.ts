@@ -1,9 +1,10 @@
-import { defineImmerModel } from '@/models/interface';
+import { ImmerModelType } from '@/models/interface';
 
-export default defineImmerModel({
-  state: {
-    test: 1,
-  },
-  effects: {},
+export type GlobalType = {};
+
+const model: ImmerModelType<GlobalType> = {
+  state: {},
   reducers: {},
-});
+  effects: {},
+};
+export default model;
