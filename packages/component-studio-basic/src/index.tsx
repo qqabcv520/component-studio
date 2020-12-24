@@ -26,7 +26,7 @@ export interface TestComponentProps {
 const TestComponent: FC<TestComponentProps> = (props: TestComponentProps) => {
   return (
     <div>
-      <h1>Content: {props.content}</h1>
+      <h1>{props.content}</h1>
     </div>
   );
 };

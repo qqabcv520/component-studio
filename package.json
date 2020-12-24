@@ -2,7 +2,7 @@
   "private": true,
   "name": "component-studio",
   "description": "组件工作室",
-  "license": "TIM",
+  "license": "MIT",
   "workspaces": [
     "packages/*"
   ],

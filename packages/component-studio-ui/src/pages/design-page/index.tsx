@@ -26,7 +26,7 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
     },
     [dispatch],
   );
-
+  console.log(editingWidgets);
   return (
     <div className={styles.main}>
       <Header />
