@@ -1,7 +1,7 @@
-import React, { FC, useCallback } from 'react';
+import React, { Component, FC, useCallback } from 'react';
 import '../../accets/style/index.less';
 import { connect, ConnectProps } from 'umi';
-import { DesignState } from '@/models/design';
+import { DesignState, EditingWidget, SetEditingWidgetRefPayload } from '@/models/design';
 import { WidgetInfo } from 'component-studio-core';
 import styles from './index.less';
 import { Toolbar } from './toolbar';
@@ -11,7 +11,7 @@ import { Menu } from './menu';
 
 const DesignPage: FC<ConnectProps & DesignState> = ({
   widgets,
-  editingWidgets,
+  editingWidgetMap,
   propMap,
   dispatch,
 }) => {
@@ -26,13 +26,31 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
     },
     [dispatch],
   );
-  console.log(editingWidgets);
+  const setEditingWidgetRef = useCallback(
+    (editingWidget: EditingWidget, instance: Component) => {
+      if (dispatch && instance && editingWidget.instance !== instance) {
+        dispatch<SetEditingWidgetRefPayload>({
+          type: 'design/setEditingWidgetRef',
+          payload: {
+            editingWidgetId: editingWidget.id,
+            instance,
+          },
+        });
+      }
+    },
+    [dispatch],
+  );
+  const editingWidgets = Object.values(editingWidgetMap);
   return (
     <div className={styles.main}>
       <Header />
       <div className={styles.body}>
         <Toolbar widgets={widgets} onWidgetAdd={onWidgetAdd} />
-        <Screen editingWidgets={editingWidgets} propMap={propMap} />
+        <Screen
+          editingWidgets={editingWidgets}
+          propMap={propMap}
+          setEditingWidgetRef={setEditingWidgetRef}
+        />
         <Menu />
       </div>
     </div>

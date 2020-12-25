@@ -1,4 +1,12 @@
-import React, { createRef, RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  Component,
+  createRef,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { EditingWidget } from '@/models/design';
 import styles from './index.less';
 
@@ -7,6 +15,7 @@ export interface ScreenProps {
   propMap: {
     [key: string]: unknown;
   };
+  setEditingWidgetRef: (editingWidgetId: EditingWidget, instance: Component) => void;
 }
 
 function matchWidget(parents: Array<RefObject<Element | Text | null>>, target: HTMLElement | null) {
@@ -18,17 +27,17 @@ function matchWidget(parents: Array<RefObject<Element | Text | null>>, target: H
   return tempNode;
 }
 
-export const Screen: React.FC<ScreenProps> = ({ editingWidgets, propMap }) => {
+export const Screen: React.FC<ScreenProps> = ({ editingWidgets, propMap, setEditingWidgetRef }) => {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [elements, setElements] = useState<JSX.Element[]>([]);
-  const [refSet, setRefSet] = useState<Array<RefObject<Element | Text | null>>>([]);
+  const [wrapperRefSet, setWrapperRefSet] = useState<Array<RefObject<Element | Text | null>>>([]);
   const coverRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
   const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     setTarget(e.target as HTMLElement);
   }, []);
 
-  const wrapper = matchWidget(refSet, target);
+  const wrapper = matchWidget(wrapperRefSet, target);
 
   const { left = 0, top = 0, height = 0, width = 0 } = wrapper?.getBoundingClientRect() ?? {};
   const { left: screenLeft = 0, top: screenTop = 0 } =
@@ -39,10 +48,11 @@ export const Screen: React.FC<ScreenProps> = ({ editingWidgets, propMap }) => {
     height: `${height}px`,
     width: `${width}px`,
   };
+  createRef();
 
   useEffect(() => {
     const elementAndRef = editingWidgets.map((editingWidget) => {
-      const ref = createRef<Element | Text | null>();
+      const wrapperRef = createRef<Element | Text | null>();
       const widgetProps = editingWidget.props.reduce((pre, curr) => {
         return {
           ...pre,
@@ -50,14 +60,19 @@ export const Screen: React.FC<ScreenProps> = ({ editingWidgets, propMap }) => {
         };
       }, Object.create(null));
       return {
-        ref,
+        wrapperRef,
         element: (
-          <editingWidget.widgetType key={editingWidget.id} wrapperRef={ref} {...widgetProps} />
+          <editingWidget.widgetType
+            key={editingWidget.id}
+            ref={(ref: Component) => setEditingWidgetRef(editingWidget, ref)}
+            wrapperRef={wrapperRef}
+            {...widgetProps}
+          />
         ),
       };
     });
     setElements(elementAndRef.map((value) => value.element));
-    setRefSet(elementAndRef.map((value) => value.ref));
+    setWrapperRefSet(elementAndRef.map((value) => value.wrapperRef));
   }, [editingWidgets]);
 
   return (
