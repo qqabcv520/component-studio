@@ -30,7 +30,7 @@ export interface WidgetGroup {
 }
 
 export interface WrapperRefProps {
-  wrapperRef?: MutableRefObject<Element | Text | null>;
+  wrapperRef?: MutableRefObject<Element | null>;
 }
 
 export function componentToWidget<P>(
@@ -39,16 +39,23 @@ export function componentToWidget<P>(
   return class extends Component<P & WrapperRefProps> {
     componentDidMount() {
       if (this.props.wrapperRef) {
-        // eslint-disable-next-line react/no-find-dom-node
-        this.props.wrapperRef.current = findDOMNode(this);
+        this.props.wrapperRef.current = this.findElement();
       }
     }
 
     componentDidUpdate() {
       if (this.props.wrapperRef) {
-        // eslint-disable-next-line react/no-find-dom-node
-        this.props.wrapperRef.current = findDOMNode(this);
+        this.props.wrapperRef.current = this.findElement();
       }
+    }
+
+    findElement() {
+      // eslint-disable-next-line react/no-find-dom-node
+      const node = findDOMNode(this);
+      if (node instanceof Element) {
+        return node;
+      }
+      throw Error('组件必须根节点必须是Element');
     }
 
     render() {

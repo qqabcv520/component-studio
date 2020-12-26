@@ -1,7 +1,7 @@
-import React, { Component, FC, useCallback } from 'react';
+import React, { FC, useCallback } from 'react';
 import '../../accets/style/index.less';
 import { connect, ConnectProps } from 'umi';
-import { DesignState, EditingWidget, SetEditingWidgetRefPayload } from '@/models/design';
+import { DesignState, EditingWidgetRef } from '@/models/design';
 import { WidgetInfo } from 'component-studio-core';
 import styles from './index.less';
 import { Toolbar } from './toolbar';
@@ -13,6 +13,7 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
   widgets,
   editingWidgetMap,
   propMap,
+  selectedWidgetRef,
   dispatch,
 }) => {
   const onWidgetAdd = useCallback(
@@ -26,17 +27,9 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
     },
     [dispatch],
   );
-  const setEditingWidgetRef = useCallback(
-    (editingWidget: EditingWidget, instance: Component) => {
-      if (dispatch && instance && editingWidget.instance !== instance) {
-        dispatch<SetEditingWidgetRefPayload>({
-          type: 'design/setEditingWidgetRef',
-          payload: {
-            editingWidgetId: editingWidget.id,
-            instance,
-          },
-        });
-      }
+  const onSelectWidget = useCallback(
+    (selectWidgetRef: EditingWidgetRef | null) => {
+      console.log(selectWidgetRef);
     },
     [dispatch],
   );
@@ -46,12 +39,8 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
       <Header />
       <div className={styles.body}>
         <Toolbar widgets={widgets} onWidgetAdd={onWidgetAdd} />
-        <Screen
-          editingWidgets={editingWidgets}
-          propMap={propMap}
-          setEditingWidgetRef={setEditingWidgetRef}
-        />
-        <Menu />
+        <Screen editingWidgets={editingWidgets} onSelectWidget={onSelectWidget} propMap={propMap} />
+        <Menu selectedWidgetRef={selectedWidgetRef} />
       </div>
     </div>
   );

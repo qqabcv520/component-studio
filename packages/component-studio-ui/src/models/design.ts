@@ -2,7 +2,7 @@ import { WidgetGroup, WidgetInfo, WidgetProp, WidgetWrapperType } from 'componen
 import { ImmerModelType } from '@/models/interface';
 import { widgets as basicWidgets } from 'component-studio-basic';
 import { Action } from '@@/plugin-dva/connect';
-import { Component } from 'react';
+import { Component, RefObject } from 'react';
 
 /**
  * 用于存放 Widget 的参数
@@ -21,6 +21,12 @@ export interface EditingWidget {
   instance: Component | null;
 }
 
+export interface EditingWidgetRef {
+  wrapperRef: RefObject<Element | null>;
+  instanceRef: RefObject<Component>;
+  editingWidget: EditingWidget;
+}
+
 export interface DesignState {
   widgets: WidgetGroup[];
   propMap: {
@@ -31,6 +37,7 @@ export interface DesignState {
   };
   propMapIndex: number;
   editingWidgetsIndex: number;
+  selectedWidgetRef: EditingWidgetRef | null;
 }
 
 export interface AddEditingWidgetAction extends Action<'addEditingWidget'> {
@@ -69,6 +76,7 @@ const model: ImmerModelType<DesignState> = {
     propMap: Object.create(null),
     propMapIndex: 0,
     editingWidgetsIndex: 0,
+    selectedWidgetRef: null,
   },
   reducers: {
     addWidget(state, action: AddWidgetAction) {

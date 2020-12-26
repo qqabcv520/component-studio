@@ -1,58 +1,39 @@
-import React, {
-  Component,
-  createRef,
-  RefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import { EditingWidget } from '@/models/design';
+import React, { Component, createRef, useCallback, useMemo, useRef, useState } from 'react';
+import { EditingWidget, EditingWidgetRef } from '@/models/design';
 import styles from './index.less';
 
 export interface ScreenProps {
   editingWidgets: EditingWidget[];
+  onSelectWidget: (selectWidgetRef: EditingWidgetRef | null) => void;
   propMap: {
     [key: string]: unknown;
   };
-  setEditingWidgetRef: (editingWidgetId: EditingWidget, instance: Component) => void;
 }
 
-function matchWidget(parents: Array<RefObject<Element | Text | null>>, target: HTMLElement | null) {
+function matchWidget(editingWidgetRefs: Array<EditingWidgetRef>, target: HTMLElement | null) {
   let tempNode = target;
-  const parentSet = new Set(parents.map((value) => value.current));
-  while (tempNode != null && !parentSet.has(tempNode)) {
+  const nodeMap = editingWidgetRefs.reduce((previousValue, currentValue) => {
+    previousValue.set(currentValue.wrapperRef.current, currentValue);
+    return previousValue;
+  }, new Map<Element | null, EditingWidgetRef>());
+  while (tempNode != null && !nodeMap.has(tempNode)) {
     tempNode = tempNode.parentElement;
   }
-  return tempNode;
+  if (tempNode == null) {
+    return null;
+  }
+  return nodeMap.get(tempNode) ?? null;
 }
 
-export const Screen: React.FC<ScreenProps> = ({ editingWidgets, propMap, setEditingWidgetRef }) => {
+export const Screen: React.FC<ScreenProps> = ({ editingWidgets, propMap, onSelectWidget }) => {
   const [target, setTarget] = useState<HTMLElement | null>(null);
-  const [elements, setElements] = useState<JSX.Element[]>([]);
-  const [wrapperRefSet, setWrapperRefSet] = useState<Array<RefObject<Element | Text | null>>>([]);
   const coverRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
-  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    setTarget(e.target as HTMLElement);
-  }, []);
 
-  const wrapper = matchWidget(wrapperRefSet, target);
-
-  const { left = 0, top = 0, height = 0, width = 0 } = wrapper?.getBoundingClientRect() ?? {};
-  const { left: screenLeft = 0, top: screenTop = 0 } =
-    screenRef.current?.getBoundingClientRect() ?? {};
-  const style = {
-    left: `${left - screenLeft}px`,
-    top: `${top - screenTop}px`,
-    height: `${height}px`,
-    width: `${width}px`,
-  };
-  createRef();
-
-  useEffect(() => {
+  const { editingWidgetRef, elements } = useMemo(() => {
     const elementAndRef = editingWidgets.map((editingWidget) => {
-      const wrapperRef = createRef<Element | Text | null>();
+      const wrapperRef = createRef<Element | null>();
+      const instanceRef = createRef<Component>();
       const widgetProps = editingWidget.props.reduce((pre, curr) => {
         return {
           ...pre,
@@ -61,20 +42,46 @@ export const Screen: React.FC<ScreenProps> = ({ editingWidgets, propMap, setEdit
       }, Object.create(null));
       return {
         wrapperRef,
+        instanceRef,
+        editingWidget,
         element: (
           <editingWidget.widgetType
             key={editingWidget.id}
-            ref={(ref: Component) => setEditingWidgetRef(editingWidget, ref)}
+            ref={instanceRef}
             wrapperRef={wrapperRef}
             {...widgetProps}
           />
         ),
       };
     });
-    setElements(elementAndRef.map((value) => value.element));
-    setWrapperRefSet(elementAndRef.map((value) => value.wrapperRef));
+    return {
+      elements: elementAndRef.map((value) => value.element),
+      editingWidgetRef: elementAndRef.map(({ element, ...otherProp }) => otherProp),
+    };
   }, [editingWidgets]);
 
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const t = e.target as HTMLElement;
+      setTarget(t);
+      const targetWidget = matchWidget(editingWidgetRef, t);
+      onSelectWidget(targetWidget);
+    },
+    [editingWidgetRef],
+  );
+
+  const targetWidget = matchWidget(editingWidgetRef, target);
+
+  const { left = 0, top = 0, height = 0, width = 0 } =
+    targetWidget?.wrapperRef.current?.getBoundingClientRect() ?? {};
+  const { left: screenLeft = 0, top: screenTop = 0 } =
+    screenRef.current?.getBoundingClientRect() ?? {};
+  const style = {
+    left: `${left - screenLeft}px`,
+    top: `${top - screenTop}px`,
+    height: `${height}px`,
+    width: `${width}px`,
+  };
   return (
     <div ref={screenRef} className={styles.screen} onMouseDown={onMouseDown}>
       <div>{elements}</div>
