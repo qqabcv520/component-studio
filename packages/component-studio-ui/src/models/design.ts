@@ -1,8 +1,13 @@
-import { WidgetGroup, WidgetInfo, WidgetProp, WidgetWrapperType } from 'component-studio-core';
-import { ImmerModelType } from '@/models/interface';
+import {
+  WidgetComponent,
+  WidgetGroup,
+  WidgetInfo,
+  WidgetProp,
+  WidgetWrapperType,
+} from 'component-studio-core';
+import { ModelType } from '@/models/interface';
 import { widgets as basicWidgets } from 'component-studio-basic';
 import { Action } from '@@/plugin-dva/connect';
-import { Component, RefObject } from 'react';
 
 /**
  * 用于存放 Widget 的参数
@@ -18,33 +23,12 @@ export interface EditingWidget {
   id: number;
   props: EditingWidgetProp[];
   widgetType: WidgetWrapperType;
-  instance: Component | null;
-}
-
-export interface EditingWidgetRef {
-  wrapperRef: RefObject<Element | null>;
-  instanceRef: RefObject<Component>;
-  editingWidget: EditingWidget;
-}
-
-export interface DesignState {
-  widgets: WidgetGroup[];
-  propMap: {
-    [id: number]: unknown;
-  };
-  editingWidgetMap: {
-    [id: number]: EditingWidget;
-  };
-  propMapIndex: number;
-  editingWidgetsIndex: number;
-  selectedWidgetRef: EditingWidgetRef | null;
 }
 
 export interface AddEditingWidgetAction extends Action<'addEditingWidget'> {
   payload?: {
     props: EditingWidgetProp[];
     widgetType: WidgetWrapperType;
-    instance: Component | null;
   };
 }
 
@@ -60,59 +44,94 @@ export interface AddPropToMapAction extends Action<'addPropToMap'> {
   payload?: WidgetProp;
 }
 
-export interface SetEditingWidgetRefPayload {
-  editingWidgetId: number;
-  instance: Component;
+export interface SetEditingWidgetInstancePayload {
+  id: number;
+  instance: WidgetComponent | null;
 }
 
-export interface SetEditingWidgetRefAction extends Action<'setEditingWidgetRef'> {
-  payload?: SetEditingWidgetRefPayload;
+export interface SetEditingWidgetInstanceAction extends Action<'setEditingWidgetInstance'> {
+  payload?: SetEditingWidgetInstancePayload;
 }
 
-const model: ImmerModelType<DesignState> = {
-  state: {
-    widgets: [],
-    editingWidgetMap: Object.create(null),
-    propMap: Object.create(null),
-    propMapIndex: 0,
-    editingWidgetsIndex: 0,
-    selectedWidgetRef: null,
-  },
+export interface SelectedEditingWidgetAction extends Action<'setEditingWidgetRef'> {
+  payload?: EditingWidget | null;
+}
+
+const initState = {
+  widgets: [] as WidgetGroup[],
+  editingWidgetMap: Object.create(null) as { [id: number]: EditingWidget },
+  editingWidgetInstanceMap: Object.create(null) as { [id: number]: WidgetComponent | null },
+  propMap: Object.create(null) as { [id: number]: unknown },
+  propMapIndex: 0,
+  editingWidgetsIndex: 0,
+  selectedWidget: null as EditingWidget | null,
+};
+
+export type DesignState = typeof initState;
+
+const model: ModelType<DesignState> = {
+  state: initState,
   reducers: {
-    addWidget(state, action: AddWidgetAction) {
-      if (action.payload) {
-        state.widgets.push(action.payload);
-      }
-    },
-    addEditingWidget(state, action: AddEditingWidgetAction) {
-      const localState = state;
-      const editingWidgets = action.payload;
-      if (editingWidgets) {
-        localState.editingWidgetsIndex += 1;
-        const id = state.editingWidgetsIndex;
-        localState.editingWidgetMap[id] = {
-          ...editingWidgets,
-          id,
+    addWidget(state = initState, { payload }: AddWidgetAction) {
+      if (payload) {
+        return {
+          ...state,
+          widgets: [...state.widgets, payload],
         };
       }
+      return state;
     },
-    addPropToMap(state, action: AddPropToMapAction) {
-      const localState = state;
-      localState.propMapIndex += 1;
-      localState.propMap[localState.propMapIndex] =
-        action.payload?.defaultValue !== undefined
-          ? action.payload?.defaultValue
-          : action.payload?.propType.defaultValue;
-    },
-    setEditingWidgetRef(state, { payload }: SetEditingWidgetRefAction) {
-      const localState = state;
-      if (
-        payload &&
-        state.editingWidgetMap[payload.editingWidgetId] &&
-        localState.editingWidgetMap[payload.editingWidgetId]
-      ) {
-        localState.editingWidgetMap[payload.editingWidgetId].instance = payload.instance;
+    addEditingWidget(state = initState, { payload }: AddEditingWidgetAction) {
+      if (payload) {
+        const newId = state.editingWidgetsIndex + 1;
+        return {
+          ...state,
+          editingWidgetsIndex: newId,
+          editingWidgetMap: {
+            ...state.editingWidgetMap,
+            [newId]: {
+              ...payload,
+              id: newId,
+            },
+          },
+        };
       }
+      return state;
+    },
+    addPropToMap(state = initState, { payload }: AddPropToMapAction) {
+      if (payload) {
+        const newId = state.propMapIndex + 1;
+        return {
+          ...state,
+          propMapIndex: newId,
+          propMap: {
+            ...state.propMap,
+            [newId]:
+              payload?.defaultValue !== undefined
+                ? payload?.defaultValue
+                : payload?.propType.defaultValue,
+          },
+        };
+      }
+      return state;
+    },
+    setEditingWidgetInstance(state = initState, { payload }: SetEditingWidgetInstanceAction) {
+      if (payload) {
+        return {
+          ...state,
+          editingWidgetInstanceMap: {
+            ...state.editingWidgetInstanceMap,
+            [payload.id]: payload.instance,
+          },
+        };
+      }
+      return state;
+    },
+    selectedEditingWidget(state = initState, { payload }: SelectedEditingWidgetAction) {
+      return {
+        ...state,
+        selectedWidgetRef: payload || null,
+      };
     },
   },
   effects: {
@@ -141,7 +160,6 @@ const model: ImmerModelType<DesignState> = {
           payload: {
             props,
             widgetType: widgetInfo.widgetType,
-            instance: null,
           },
         });
       }

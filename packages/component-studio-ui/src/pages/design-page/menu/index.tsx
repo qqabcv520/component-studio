@@ -1,11 +1,16 @@
 import React, { FC } from 'react';
-import { EditingWidgetRef } from '@/models/design';
+import { EditingWidget } from '@/models/design';
 import styles from './index.less';
 
 export interface MenuProps {
-  selectedWidgetRef: EditingWidgetRef | null;
+  selectedWidget: EditingWidget | null;
 }
 
-export const Menu: FC<MenuProps> = () => {
-  return <div className={styles.menu} />;
+export const Menu: FC<MenuProps> = ({ selectedWidget }) => {
+  return (
+    <div className={styles.menu}>
+      {selectedWidget?.props.map((prop) => prop.propKey)}
+      {selectedWidget?.id}
+    </div>
+  );
 };

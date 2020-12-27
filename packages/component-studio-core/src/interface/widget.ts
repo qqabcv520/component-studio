@@ -1,10 +1,4 @@
-import {
-  Component,
-  ComponentClass,
-  createElement,
-  FunctionComponent,
-  MutableRefObject,
-} from 'react';
+import { Component, ComponentClass, createElement, FunctionComponent } from 'react';
 import { findDOMNode } from 'react-dom';
 import { PropInfo } from './prop';
 
@@ -14,9 +8,7 @@ export interface WidgetProp {
   defaultValue?: unknown;
 }
 
-export type WidgetWrapperType<P = unknown> =
-  | FunctionComponent<P & WrapperRefProps>
-  | ComponentClass<P & WrapperRefProps>;
+export type WidgetWrapperType<P = unknown> = FunctionComponent<P> | ComponentClass<P>;
 
 export interface WidgetInfo<P = unknown> {
   widgetName: string;
@@ -29,33 +21,31 @@ export interface WidgetGroup {
   widgetInfos: WidgetInfo[];
 }
 
-export interface WrapperRefProps {
-  wrapperRef?: MutableRefObject<Element | null>;
+export interface WidgetComponent<P = {}, S = {}, SS = any> extends Component<P, S, SS> {
+  wrapperRef: Element | null;
 }
 
 export function componentToWidget<P>(
   Com: FunctionComponent<P> | ComponentClass<P>,
 ): WidgetWrapperType<P> {
-  return class extends Component<P & WrapperRefProps> {
+  return class extends Component<P> implements WidgetComponent {
+    wrapperRef: Element | null = null;
+
     componentDidMount() {
-      if (this.props.wrapperRef) {
-        this.props.wrapperRef.current = this.findElement();
-      }
+      this.updateWrapperRef();
     }
 
     componentDidUpdate() {
-      if (this.props.wrapperRef) {
-        this.props.wrapperRef.current = this.findElement();
-      }
+      this.updateWrapperRef();
     }
 
-    findElement() {
+    updateWrapperRef() {
       // eslint-disable-next-line react/no-find-dom-node
       const node = findDOMNode(this);
-      if (node instanceof Element) {
-        return node;
+      if (!(node instanceof Element)) {
+        throw Error('组件必须根节点必须是Element');
       }
-      throw Error('组件必须根节点必须是Element');
+      this.wrapperRef = node;
     }
 
     render() {

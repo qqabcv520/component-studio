@@ -6,6 +6,6 @@ export default defineConfig({
   },
   routes: [{ path: '/', component: '@/pages/design-page/index' }],
   dva: {
-    immer: true,
+    immer: false,
   },
 });
