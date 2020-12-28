@@ -1,4 +1,4 @@
-export type Parser = (value: any) => JSX.Element;
+export type Parser = (value: any, onChange: (value: any) => void) => JSX.Element;
 
 export interface PropInfo {
   name: string;
