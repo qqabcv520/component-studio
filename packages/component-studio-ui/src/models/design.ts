@@ -1,4 +1,5 @@
 import {
+  PropInfo,
   WidgetComponent,
   WidgetGroup,
   WidgetInfo,
@@ -16,6 +17,7 @@ import { Action } from '@@/plugin-dva/connect';
  */
 export interface EditingWidgetProp {
   propName: string;
+  propType: PropInfo;
   propKey: string;
 }
 
@@ -54,14 +56,14 @@ export interface SetEditingWidgetInstanceAction extends Action<'setEditingWidget
 }
 
 export interface SelectedEditingWidgetAction extends Action<'setEditingWidgetRef'> {
-  payload?: EditingWidget | null;
+  payload?: string | null;
 }
 
 const initState = {
   widgets: [] as WidgetGroup[],
-  editingWidgetMap: Object.create(null) as { [id: number]: EditingWidget },
-  editingWidgetInstanceMap: Object.create(null) as { [id: number]: WidgetComponent | null },
-  propMap: Object.create(null) as { [id: number]: unknown },
+  editingWidgetMap: Object.create(null) as { [id: string]: EditingWidget },
+  editingWidgetInstanceMap: Object.create(null) as { [id: string]: WidgetComponent },
+  propMap: Object.create(null) as { [id: string]: unknown },
   propMapIndex: 0,
   editingWidgetsIndex: 0,
   selectedWidget: null as EditingWidget | null,
@@ -117,6 +119,16 @@ const model: ModelType<DesignState> = {
     },
     setEditingWidgetInstance(state = initState, { payload }: SetEditingWidgetInstanceAction) {
       if (payload) {
+        if (payload.instance == null) {
+          const { [payload.id]: deleteInstance, ...editingWidgetInstanceMap } = {
+            ...state.editingWidgetInstanceMap,
+          };
+          delete editingWidgetInstanceMap[payload.id];
+          return {
+            ...state,
+            editingWidgetInstanceMap,
+          };
+        }
         return {
           ...state,
           editingWidgetInstanceMap: {
@@ -130,7 +142,7 @@ const model: ModelType<DesignState> = {
     selectedEditingWidget(state = initState, { payload }: SelectedEditingWidgetAction) {
       return {
         ...state,
-        selectedWidgetRef: payload || null,
+        selectedWidget: payload != null ? state.editingWidgetMap[payload] : null,
       };
     },
   },
@@ -152,6 +164,7 @@ const model: ModelType<DesignState> = {
           );
           props = props.concat({
             propName: widgetProp.propName,
+            propType: widgetProp.propType,
             propKey,
           });
         }

@@ -1,7 +1,7 @@
 import React, { FC, useMemo } from 'react';
 import '../../accets/style/index.less';
 import { connect, ConnectProps } from 'umi';
-import { DesignState, EditingWidget, SetEditingWidgetInstancePayload } from '@/models/design';
+import { DesignState, SetEditingWidgetInstancePayload } from '@/models/design';
 import { WidgetInfo } from 'component-studio-core';
 import styles from './index.less';
 import { Toolbar } from './toolbar';
@@ -25,11 +25,11 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
       });
     }
   };
-  const onSelectWidget = (selectWidgetRef: EditingWidget | null) => {
+  const onSelectWidget = (selectWidgetId: string | null) => {
     if (dispatch) {
-      dispatch<EditingWidget | null>({
+      dispatch<string | null>({
         type: 'design/selectedEditingWidget',
-        payload: selectWidgetRef,
+        payload: selectWidgetId,
       });
     }
   };

@@ -1,4 +1,4 @@
-import { Component, ComponentClass, createElement, FunctionComponent } from 'react';
+import { ComponentClass, createElement, FunctionComponent, PureComponent } from 'react';
 import { findDOMNode } from 'react-dom';
 import { PropInfo } from './prop';
 
@@ -21,14 +21,14 @@ export interface WidgetGroup {
   widgetInfos: WidgetInfo[];
 }
 
-export interface WidgetComponent<P = {}, S = {}, SS = any> extends Component<P, S, SS> {
+export interface WidgetComponent<P = {}, S = {}, SS = any> extends PureComponent<P, S, SS> {
   wrapperRef: Element | null;
 }
 
 export function componentToWidget<P>(
   Com: FunctionComponent<P> | ComponentClass<P>,
 ): WidgetWrapperType<P> {
-  return class extends Component<P> implements WidgetComponent {
+  return class WidgetComponent extends PureComponent<P> implements WidgetComponent {
     wrapperRef: Element | null = null;
 
     componentDidMount() {
