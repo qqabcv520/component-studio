@@ -10,7 +10,7 @@ export interface WidgetProp {
 
 export type WidgetWrapperType<P = unknown> = FunctionComponent<P> | ComponentClass<P>;
 
-export interface WidgetInfo<P = unknown> {
+export interface WidgetInfo<P = any> {
   widgetName: string;
   widgetProps: WidgetProp[];
   widgetType: WidgetWrapperType<P>;
