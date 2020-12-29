@@ -1,19 +1,33 @@
 import { componentToWidget, PropInfo, WidgetWrapperType, WidgetGroup } from 'component-studio-core';
-import React, { FC } from 'react';
+import React, { ChangeEvent, FC, useCallback } from 'react';
 
 const numberProp: PropInfo = {
   name: 'Number',
   defaultValue: 0,
-  parser(value: any) {
+  Parser(value: any) {
     return <input type="number" value={value} />;
   },
 };
 
-const stringProp: PropInfo = {
+const stringProp: PropInfo<string> = {
   name: 'String',
   defaultValue: '',
-  parser(value: any) {
-    return <input type="text" value={value} />;
+  Parser({ value, onChange }) {
+    const onChangeCallback = useCallback(
+      (e: ChangeEvent<HTMLInputElement>) => {
+        onChange(e.target.value);
+      },
+      [onChange],
+    );
+    return (
+      <input
+        type="text"
+        style={{ width: '100%' }}
+        placeholder="请输入组件内容"
+        value={value}
+        onChange={onChangeCallback}
+      />
+    );
   },
 };
 

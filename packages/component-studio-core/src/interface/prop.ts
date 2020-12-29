@@ -1,7 +1,12 @@
-export type Parser = (value: any, onChange: (value: any) => void) => JSX.Element;
+import { ComponentType } from 'react';
 
-export interface PropInfo {
+export interface ParserProps<T> {
+  value: T;
+  onChange: (value: T) => void;
+}
+
+export interface PropInfo<T = any> {
   name: string;
-  defaultValue?: unknown;
-  parser: Parser;
+  defaultValue?: T;
+  Parser: ComponentType<ParserProps<T>>;
 }
