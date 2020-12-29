@@ -39,8 +39,6 @@ export const Screen: React.FC<ScreenProps> = ({
   };
 
   useEffect(() => {
-    // 可以拿到最新selectedWidget
-    console.log(id);
     onSelectWidget(id);
   }, [selectedWidget]);
 
