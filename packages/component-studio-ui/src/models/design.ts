@@ -59,6 +59,15 @@ export interface SelectedEditingWidgetAction extends Action<'setEditingWidgetRef
   payload?: string | null;
 }
 
+export interface SetPropPayload {
+  key: string;
+  value: any;
+}
+
+export interface SetPropAction extends Action<'setProp'> {
+  payload?: SetPropPayload;
+}
+
 const initState = {
   widgets: [] as WidgetGroup[],
   editingWidgetMap: Object.create(null) as { [id: string]: EditingWidget },
@@ -144,6 +153,18 @@ const model: ModelType<DesignState> = {
         ...state,
         selectedWidget: payload != null ? state.editingWidgetMap[payload] : null,
       };
+    },
+    setProp(state = initState, { payload }: SetPropAction) {
+      if (payload) {
+        return {
+          ...state,
+          propMap: {
+            ...state.propMap,
+            [payload.key]: payload.value,
+          },
+        };
+      }
+      return state;
     },
   },
   effects: {

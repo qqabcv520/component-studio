@@ -1,7 +1,7 @@
 import React, { FC, useMemo } from 'react';
 import '../../accets/style/index.less';
 import { connect, ConnectProps } from 'umi';
-import { DesignState, SetEditingWidgetInstancePayload } from '@/models/design';
+import { DesignState, SetEditingWidgetInstancePayload, SetPropPayload } from '@/models/design';
 import { WidgetInfo } from 'component-studio-core';
 import styles from './index.less';
 import { Toolbar } from './toolbar';
@@ -43,6 +43,18 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
     }
   };
 
+  const setProp = (key: string, value: any) => {
+    if (dispatch) {
+      dispatch<SetPropPayload>({
+        type: 'design/setProp',
+        payload: {
+          key,
+          value,
+        },
+      });
+    }
+  };
+
   const editingWidgets = useMemo(() => {
     return Object.values(editingWidgetMap).filter(Boolean);
   }, [editingWidgetMap]);
@@ -58,7 +70,7 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
           setEditingWidgetRef={setEditingWidgetRef}
           editingWidgetInstanceMap={editingWidgetInstanceMap}
         />
-        <Menu selectedWidget={selectedWidget} />
+        <Menu selectedWidget={selectedWidget} propMap={propMap} setProp={setProp} />
       </div>
     </div>
   );
