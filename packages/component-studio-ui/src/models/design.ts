@@ -9,6 +9,7 @@ import {
 import { ModelType } from '@/models/interface';
 import { widgets as basicWidgets } from 'component-studio-basic';
 import { Action } from '@@/plugin-dva/connect';
+import { EditingWidgetInfo, ExcludeProperties } from '@/utils/type';
 
 /**
  * 用于存放 Widget 的参数
@@ -21,25 +22,29 @@ export interface EditingWidgetProp {
   propKey: string;
 }
 
-export interface EditingWidget {
+export interface EditingWidgetModel extends EditingWidgetInfo {
   id: number;
-  props: EditingWidgetProp[];
-  widgetType: WidgetWrapperType;
+  parentId: string | null;
+}
+
+export interface AddEditingWidgetPayload extends ExcludeProperties<EditingWidgetModel, 'id'> {
 }
 
 export interface AddEditingWidgetAction extends Action<'addEditingWidget'> {
-  payload?: {
-    props: EditingWidgetProp[];
-    widgetType: WidgetWrapperType;
-  };
+  payload?: AddEditingWidgetPayload;
 }
 
 export interface AddWidgetAction extends Action<'addWidget'> {
   payload?: WidgetGroup;
 }
 
+export interface NewEditingWidgetPayload {
+  parentId: string | null;
+  widget: WidgetInfo;
+}
+
 export interface NewEditingWidgetAction extends Action<'newEditingWidget'> {
-  payload?: WidgetInfo;
+  payload?: NewEditingWidgetPayload;
 }
 
 export interface AddPropToMapAction extends Action<'addPropToMap'> {
@@ -70,12 +75,12 @@ export interface SetPropAction extends Action<'setProp'> {
 
 const initState = {
   widgets: [] as WidgetGroup[],
-  editingWidgetMap: Object.create(null) as { [id: string]: EditingWidget },
+  editingWidgetMap: Object.create(null) as { [id: string]: EditingWidgetModel },
   editingWidgetInstanceMap: Object.create(null) as { [id: string]: WidgetComponent },
   propMap: Object.create(null) as { [id: string]: unknown },
   propMapIndex: 0,
   editingWidgetsIndex: 0,
-  selectedWidget: null as EditingWidget | null,
+  selectedWidgetId: null as string | null,
 };
 
 export type DesignState = typeof initState;
@@ -92,17 +97,17 @@ const model: ModelType<DesignState> = {
       }
       return state;
     },
-    addEditingWidget(state = initState, { payload }: AddEditingWidgetAction) {
+    addEditingWidget(state = initState, { payload }: AddEditingWidgetAction): DesignState {
       if (payload) {
-        const newId = state.editingWidgetsIndex + 1;
+        const id = state.editingWidgetsIndex + 1;
         return {
           ...state,
-          editingWidgetsIndex: newId,
+          editingWidgetsIndex: id,
           editingWidgetMap: {
             ...state.editingWidgetMap,
-            [newId]: {
+            [id]: {
               ...payload,
-              id: newId,
+              id,
             },
           },
         };
@@ -151,7 +156,7 @@ const model: ModelType<DesignState> = {
     selectedEditingWidget(state = initState, { payload }: SelectedEditingWidgetAction) {
       return {
         ...state,
-        selectedWidget: payload != null ? state.editingWidgetMap[payload] : null,
+        selectedWidgetId: payload ?? null,
       };
     },
     setProp(state = initState, { payload }: SetPropAction) {
@@ -169,7 +174,8 @@ const model: ModelType<DesignState> = {
   },
   effects: {
     *newEditingWidget(action: NewEditingWidgetAction, effects) {
-      const widgetInfo = action.payload;
+      const widgetInfo = action.payload?.widget;
+      const parentId = action.payload?.parentId ?? null;
       if (widgetInfo) {
         let props: EditingWidgetProp[] = [];
 
@@ -194,7 +200,9 @@ const model: ModelType<DesignState> = {
           payload: {
             props,
             widgetType: widgetInfo.widgetType,
-          },
+            widgetName: widgetInfo.widgetName,
+            parentId
+          }
         });
       }
     },

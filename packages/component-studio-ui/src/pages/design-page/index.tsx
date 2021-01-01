@@ -1,30 +1,44 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 import '../../accets/style/index.less';
 import { connect, ConnectProps } from 'umi';
-import { DesignState, SetEditingWidgetInstancePayload, SetPropPayload } from '@/models/design';
+import {
+  DesignState,
+  EditingWidgetModel,
+  NewEditingWidgetPayload,
+  SetEditingWidgetInstancePayload,
+  SetPropPayload
+} from '@/models/design';
 import { WidgetInfo } from 'component-studio-core';
+import { Elements } from '@/pages/design-page/elements';
+import { EditingWidgetTree } from '@/utils/type';
 import styles from './index.less';
 import { Toolbar } from './toolbar';
 import { Header } from './header';
 import { Screen } from './screen';
 import { Menu } from './menu';
 
+
 const DesignPage: FC<ConnectProps & DesignState> = ({
   widgets,
   editingWidgetMap,
   editingWidgetInstanceMap,
   propMap,
-  selectedWidget,
+  selectedWidgetId,
   dispatch,
 }) => {
-  const onWidgetAdd = (widget: WidgetInfo) => {
+  console.log(selectedWidgetId);
+  const onWidgetAdd = useCallback((widget: WidgetInfo) => {
     if (dispatch) {
-      dispatch<WidgetInfo>({
+      console.log(selectedWidgetId);
+      dispatch<NewEditingWidgetPayload>({
         type: 'design/newEditingWidget',
-        payload: widget,
+        payload: {
+          parentId: selectedWidgetId,
+          widget,
+        },
       });
     }
-  };
+  }, [selectedWidgetId]);
   const onSelectWidget = (selectWidgetId: string | null) => {
     if (dispatch) {
       dispatch<string | null>({
@@ -54,26 +68,50 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
       });
     }
   };
+  console.log(editingWidgetMap);
+  const editingWidgetTree = useEditingWidgetTree(editingWidgetMap);
+  const selectedWidget = useMemo(() => selectedWidgetId ? editingWidgetMap[selectedWidgetId] : null, [editingWidgetMap, selectedWidgetId]);
 
-  const editingWidgets = useMemo(() => {
-    return Object.values(editingWidgetMap).filter(Boolean);
-  }, [editingWidgetMap]);
   return (
     <div className={styles.main}>
       <Header />
       <div className={styles.body}>
         <Toolbar widgets={widgets} onWidgetAdd={onWidgetAdd} />
         <Screen
-          editingWidgets={editingWidgets}
+          editingWidgetTree={editingWidgetTree}
           onSelectWidget={onSelectWidget}
           propMap={propMap}
           setEditingWidgetRef={setEditingWidgetRef}
           editingWidgetInstanceMap={editingWidgetInstanceMap}
         />
         <Menu selectedWidget={selectedWidget} propMap={propMap} setProp={setProp} />
+        <Elements editingWidgetTree={editingWidgetTree} />
       </div>
+
+
     </div>
   );
 };
 
 export default connect(({ design }: { design: DesignState }) => design)(DesignPage);
+
+function recursiveEditingWidgetTree(parentIdMap: Map<string | null, EditingWidgetModel[]>, id: string | null = null): EditingWidgetTree[] {
+  return(parentIdMap.get(id) ?? []).map<EditingWidgetTree>(({ parentId, ...otherProps }) => ({
+    ...otherProps,
+    children: recursiveEditingWidgetTree(parentIdMap, String(otherProps.id))
+  }));
+}
+function useEditingWidgetTree(editingWidgetMap: { [id: string]: EditingWidgetModel }) {
+  return useMemo(() => {
+    const parentIdMap = Object.values(editingWidgetMap).reduce((previousValue, currentValue) => {
+      let arr = previousValue.get(currentValue.parentId);
+      if (arr == null) {
+        arr = [];
+        previousValue.set(currentValue.parentId, arr);
+      }
+      previousValue.set(currentValue.parentId, [...arr, currentValue]);
+      return previousValue;
+    }, new Map<string | null, EditingWidgetModel[]>());
+    return recursiveEditingWidgetTree(parentIdMap);
+  }, [editingWidgetMap]);
+}

@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { EditingWidget, EditingWidgetProp } from '@/models/design';
+import { EditingWidgetModel, EditingWidgetProp } from '@/models/design';
 import styles from './index.less';
 
 export interface MenuBlockProps {
@@ -20,7 +20,7 @@ const MenuBlock = memo<MenuBlockProps>(({ prop, propMap, setProp }) => {
 });
 
 export interface MenuProps {
-  selectedWidget: EditingWidget | null;
+  selectedWidget: EditingWidgetModel | null;
   propMap: { [id: string]: unknown };
   setProp: (key: string, value: any) => void;
 }

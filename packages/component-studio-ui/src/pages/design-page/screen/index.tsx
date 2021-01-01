@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { EditingWidget, SetEditingWidgetInstancePayload } from '@/models/design';
+import { SetEditingWidgetInstancePayload } from '@/models/design';
 import { WidgetComponent } from 'component-studio-core';
+import { EditingWidgetTree } from '@/utils/type';
 import styles from './index.less';
 
 export interface ScreenProps {
-  editingWidgets: EditingWidget[];
+  editingWidgetTree: EditingWidgetTree[];
   onSelectWidget: (selectWidgetId: string | null) => void;
   setEditingWidgetRef: (payload: SetEditingWidgetInstancePayload) => void;
   editingWidgetInstanceMap: { [id: string]: WidgetComponent };
@@ -12,7 +13,7 @@ export interface ScreenProps {
 }
 
 export const Screen: React.FC<ScreenProps> = ({
-  editingWidgets,
+  editingWidgetTree,
   propMap,
   setEditingWidgetRef,
   editingWidgetInstanceMap,
@@ -22,8 +23,7 @@ export const Screen: React.FC<ScreenProps> = ({
   const coverRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
 
-  const elements = useEditingWidget(editingWidgets, propMap, setEditingWidgetRef);
-
+  const elements = useEditingWidget(editingWidgetTree, propMap, setEditingWidgetRef);
   const { instance: selectedWidget = null, id = null } =
     useSelectedWidget(editingWidgetInstanceMap, target) || {};
 
@@ -54,38 +54,45 @@ export const Screen: React.FC<ScreenProps> = ({
   );
 };
 
+function recursiveEditingWidgetTree(
+  editingWidgetTree: EditingWidgetTree[],
+  propMap: { [key: string]: unknown },
+  setEditingWidgetRef: (payload: SetEditingWidgetInstancePayload) => void,
+) {
+  return editingWidgetTree.map((editingWidget) => {
+    const widgetProps = editingWidget.props.reduce((pre, curr) => {
+      return {
+        ...pre,
+        [curr.propName]: propMap[curr.propKey],
+      };
+    }, Object.create(null));
+    return (
+      <editingWidget.widgetType
+        key={editingWidget.id}
+        ref={(ref: WidgetComponent) => {
+          setEditingWidgetRef({
+            id: editingWidget.id,
+            instance: ref,
+          });
+        }}
+        {...widgetProps}
+      >
+        {recursiveEditingWidgetTree(editingWidget.children, propMap, setEditingWidgetRef)}
+      </editingWidget.widgetType>
+    );
+  });
+}
+
 function useEditingWidget(
-  editingWidgets: EditingWidget[],
+  editingWidgetTree: EditingWidgetTree[],
   propMap: { [key: string]: unknown },
   setEditingWidgetRef: (payload: SetEditingWidgetInstancePayload) => void,
 ): JSX.Element[] {
   return useMemo(() => {
-    const instanceWidgets = editingWidgets.map((editingWidget) => {
-      const localEditingWidget = editingWidget;
-      const widgetProps = editingWidget.props.reduce((pre, curr) => {
-        return {
-          ...pre,
-          [curr.propName]: propMap[curr.propKey],
-        };
-      }, Object.create(null));
-      return {
-        editingWidget: localEditingWidget,
-        element: (
-          <editingWidget.widgetType
-            key={editingWidget.id}
-            ref={(ref: WidgetComponent) => {
-              setEditingWidgetRef({
-                id: editingWidget.id,
-                instance: ref,
-              });
-            }}
-            {...widgetProps}
-          />
-        ),
-      };
-    });
-    return instanceWidgets.map((value) => value.element);
-  }, [editingWidgets, propMap]);
+    const a = recursiveEditingWidgetTree(editingWidgetTree, propMap, setEditingWidgetRef);
+    console.log(editingWidgetTree, a);
+    return a;
+  }, [editingWidgetTree, propMap]);
 }
 
 function useSelectedWidget(

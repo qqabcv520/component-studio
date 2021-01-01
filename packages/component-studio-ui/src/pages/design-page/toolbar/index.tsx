@@ -13,7 +13,7 @@ export interface WidgetProps {
 export const WidgetMenu: React.FC<WidgetProps> = ({ name, onWidgetAdd, widgetInfo }) => {
   const onClick = useCallback(() => {
     onWidgetAdd(widgetInfo);
-  }, [widgetInfo]);
+  }, [widgetInfo, onWidgetAdd]);
   return (
     <div className={styles.widget} onClick={onClick}>
       <div />
