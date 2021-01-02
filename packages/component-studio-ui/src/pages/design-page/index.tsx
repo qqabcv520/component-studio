@@ -82,7 +82,7 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
           editingWidgetInstanceMap={editingWidgetInstanceMap}
         />
         <Menu selectedWidget={selectedWidget} propMap={propMap} setProp={setProp} />
-        <Elements editingWidgetTree={editingWidgetTree} onSelectWidget={onSelectWidget} />
+        <Elements editingWidgetTree={editingWidgetTree} onSelectWidget={onSelectWidget} selectedWidgetId={selectedWidgetId}/>
       </div>
     </div>
   );

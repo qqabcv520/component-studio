@@ -5,7 +5,8 @@ export interface DivComponentProps {
   content?: string;
 }
 const divStyle: CSSProperties = {
-  minHeight: '20px'
+  minHeight: '20px',
+  padding: '8px'
 }
 const DivComponent: FC<DivComponentProps> = ({ children }) => {
   return (

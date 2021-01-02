@@ -8,10 +8,11 @@ import styles from './index.less';
 
 export interface ElementsProps {
   onSelectWidget: (selectWidgetId: string | null) => void;
+  selectedWidgetId: string | null;
   editingWidgetTree: EditingWidgetTree[];
 }
 
-export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget}) => {
+export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget, selectedWidgetId}) => {
   const treeData: DataNode[] = useTreeData(editingWidgetTree);
 
   const onDragEnter = (info: NodeDragEventParams & {expandedKeys: Key[]}) => {
@@ -45,6 +46,8 @@ export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget
     console.log(selectedKeys);
   }, [onSelectWidget])
 
+  const selectedKeys = useMemo(() => selectedWidgetId ? [selectedWidgetId] : [], [selectedWidgetId]);
+  console.log(selectedKeys);
   return (
     <div className={styles.tree}>
       <Tree
@@ -55,6 +58,7 @@ export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget
         onDrop={onDrop}
         onSelect={onSelect}
         treeData={treeData}
+        selectedKeys={selectedKeys}
       />
     </div>
   );
