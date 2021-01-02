@@ -4,7 +4,6 @@ import {
   WidgetGroup,
   WidgetInfo,
   WidgetProp,
-  WidgetWrapperType,
 } from 'component-studio-core';
 import { ModelType } from '@/models/interface';
 import { widgets as basicWidgets } from 'component-studio-basic';
@@ -23,7 +22,7 @@ export interface EditingWidgetProp {
 }
 
 export interface EditingWidgetModel extends EditingWidgetInfo {
-  id: number;
+  id: string;
   parentId: string | null;
 }
 
@@ -52,7 +51,7 @@ export interface AddPropToMapAction extends Action<'addPropToMap'> {
 }
 
 export interface SetEditingWidgetInstancePayload {
-  id: number;
+  id: string;
   instance: WidgetComponent | null;
 }
 
@@ -107,7 +106,7 @@ const model: ModelType<DesignState> = {
             ...state.editingWidgetMap,
             [id]: {
               ...payload,
-              id,
+              id: String(id),
             },
           },
         };

@@ -26,10 +26,8 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
   selectedWidgetId,
   dispatch,
 }) => {
-  console.log(selectedWidgetId);
   const onWidgetAdd = useCallback((widget: WidgetInfo) => {
     if (dispatch) {
-      console.log(selectedWidgetId);
       dispatch<NewEditingWidgetPayload>({
         type: 'design/newEditingWidget',
         payload: {
@@ -39,25 +37,25 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
       });
     }
   }, [selectedWidgetId]);
-  const onSelectWidget = (selectWidgetId: string | null) => {
+  const onSelectWidget = useCallback((selectWidgetId: string | null) => {
     if (dispatch) {
       dispatch<string | null>({
         type: 'design/selectedEditingWidget',
         payload: selectWidgetId,
       });
     }
-  };
+  }, []);
 
-  const setEditingWidgetRef = (payload: SetEditingWidgetInstancePayload) => {
+  const setEditingWidgetRef = useCallback((payload: SetEditingWidgetInstancePayload) => {
     if (dispatch) {
       dispatch<SetEditingWidgetInstancePayload>({
         type: 'design/setEditingWidgetInstance',
         payload,
       });
     }
-  };
+  }, []);
 
-  const setProp = (key: string, value: any) => {
+  const setProp = useCallback((key: string, value: any) => {
     if (dispatch) {
       dispatch<SetPropPayload>({
         type: 'design/setProp',
@@ -67,11 +65,9 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
         },
       });
     }
-  };
-  console.log(editingWidgetMap);
+  }, []);
   const editingWidgetTree = useEditingWidgetTree(editingWidgetMap);
   const selectedWidget = useMemo(() => selectedWidgetId ? editingWidgetMap[selectedWidgetId] : null, [editingWidgetMap, selectedWidgetId]);
-
   return (
     <div className={styles.main}>
       <Header />
@@ -79,16 +75,15 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
         <Toolbar widgets={widgets} onWidgetAdd={onWidgetAdd} />
         <Screen
           editingWidgetTree={editingWidgetTree}
+          selectedWidgetId={selectedWidgetId}
           onSelectWidget={onSelectWidget}
           propMap={propMap}
           setEditingWidgetRef={setEditingWidgetRef}
           editingWidgetInstanceMap={editingWidgetInstanceMap}
         />
         <Menu selectedWidget={selectedWidget} propMap={propMap} setProp={setProp} />
-        <Elements editingWidgetTree={editingWidgetTree} />
+        <Elements editingWidgetTree={editingWidgetTree} onSelectWidget={onSelectWidget} />
       </div>
-
-
     </div>
   );
 };
@@ -98,7 +93,7 @@ export default connect(({ design }: { design: DesignState }) => design)(DesignPa
 function recursiveEditingWidgetTree(parentIdMap: Map<string | null, EditingWidgetModel[]>, id: string | null = null): EditingWidgetTree[] {
   return(parentIdMap.get(id) ?? []).map<EditingWidgetTree>(({ parentId, ...otherProps }) => ({
     ...otherProps,
-    children: recursiveEditingWidgetTree(parentIdMap, String(otherProps.id))
+    children: recursiveEditingWidgetTree(parentIdMap, otherProps.id)
   }));
 }
 function useEditingWidgetTree(editingWidgetMap: { [id: string]: EditingWidgetModel }) {

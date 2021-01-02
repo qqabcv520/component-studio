@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { SetEditingWidgetInstancePayload } from '@/models/design';
 import { WidgetComponent } from 'component-studio-core';
 import { EditingWidgetTree } from '@/utils/type';
@@ -6,6 +6,7 @@ import styles from './index.less';
 
 export interface ScreenProps {
   editingWidgetTree: EditingWidgetTree[];
+  selectedWidgetId: string | null;
   onSelectWidget: (selectWidgetId: string | null) => void;
   setEditingWidgetRef: (payload: SetEditingWidgetInstancePayload) => void;
   editingWidgetInstanceMap: { [id: string]: WidgetComponent };
@@ -14,37 +15,38 @@ export interface ScreenProps {
 
 export const Screen: React.FC<ScreenProps> = ({
   editingWidgetTree,
+  selectedWidgetId,
   propMap,
   setEditingWidgetRef,
   editingWidgetInstanceMap,
   onSelectWidget,
 }) => {
-  const [target, setTarget] = useState<Element | null>(null);
+  // const [target, setTarget] = useState<Element | null>(null);
   const coverRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
 
   const elements = useEditingWidget(editingWidgetTree, propMap, setEditingWidgetRef);
-  const { instance: selectedWidget = null, id = null } =
-    useSelectedWidget(editingWidgetInstanceMap, target) || {};
 
-  const { left = 0, top = 0, height = 0, width = 0 } =
-    selectedWidget?.wrapperRef?.getBoundingClientRect() ?? {};
-  const { left: screenLeft = 0, top: screenTop = 0 } =
+  const style = useMemo( () => {
+    const selectedEditingWidgetInstance = selectedWidgetId ? editingWidgetInstanceMap[selectedWidgetId] : null;
+    const { left = 0, top = 0, height = 0, width = 0 } =
+    selectedEditingWidgetInstance?.wrapperRef?.getBoundingClientRect() ?? {};
+    const { left: screenLeft = 0, top: screenTop = 0 } =
     screenRef.current?.getBoundingClientRect() ?? {};
-  const style = {
-    left: `${left - screenLeft}px`,
-    top: `${top - screenTop}px`,
-    height: `${height}px`,
-    width: `${width}px`,
-  };
-
-  useEffect(() => {
-    onSelectWidget(id);
-  }, [selectedWidget]);
+    return {
+      left: `${left - screenLeft}px`,
+      top: `${top - screenTop}px`,
+      height: `${height}px`,
+      width: `${width}px`,
+    };
+    }, [selectedWidgetId, editingWidgetInstanceMap]
+  );
 
   const onMouseDown = useCallback((e: React.MouseEvent<Element, MouseEvent>) => {
-    setTarget(e.target as Element);
-  }, []);
+    const target = e.target as Element;
+    const { id = null } = getSelectedWidget(editingWidgetInstanceMap, target) ?? {};
+    onSelectWidget(id)
+  }, [editingWidgetInstanceMap, onSelectWidget]);
 
   return (
     <div ref={screenRef} className={styles.screen} onMouseDown={onMouseDown}>
@@ -90,31 +92,28 @@ function useEditingWidget(
 ): JSX.Element[] {
   return useMemo(() => {
     const a = recursiveEditingWidgetTree(editingWidgetTree, propMap, setEditingWidgetRef);
-    console.log(editingWidgetTree, a);
     return a;
   }, [editingWidgetTree, propMap]);
 }
 
-function useSelectedWidget(
+function getSelectedWidget(
   editingWidgetInstanceMap: { [id: string]: WidgetComponent },
   target: Element | null,
 ): { id: string; instance: WidgetComponent } | null {
-  return useMemo(() => {
-    const editingWidgetInstances = Object.entries(editingWidgetInstanceMap);
-    let tempNode = target;
-    const nodeMap = editingWidgetInstances.reduce((previousValue, currentValue) => {
-      previousValue.set(currentValue[1].wrapperRef, {
-        id: currentValue[0],
-        instance: currentValue[1],
-      });
-      return previousValue;
-    }, new Map<Element | null | undefined, { id: string; instance: WidgetComponent }>());
-    while (tempNode != null && !nodeMap.has(tempNode)) {
-      tempNode = tempNode.parentElement;
-    }
-    if (tempNode == null) {
-      return null;
-    }
-    return nodeMap.get(tempNode) ?? null;
-  }, [editingWidgetInstanceMap, target]);
+  const editingWidgetInstances = Object.entries(editingWidgetInstanceMap);
+  let tempNode = target;
+  const nodeMap = editingWidgetInstances.reduce((previousValue, currentValue) => {
+    previousValue.set(currentValue[1].wrapperRef, {
+      id: currentValue[0],
+      instance: currentValue[1],
+    });
+    return previousValue;
+  }, new Map<Element | null | undefined, { id: string; instance: WidgetComponent }>());
+  while (tempNode != null && !nodeMap.has(tempNode)) {
+    tempNode = tempNode.parentElement;
+  }
+  if (tempNode == null) {
+    return null;
+  }
+  return nodeMap.get(tempNode) ?? null;
 }

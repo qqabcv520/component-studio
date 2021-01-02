@@ -1,16 +1,17 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import { Tree } from 'antd';
 import { NodeDragEventParams } from 'rc-tree/lib/contextTypes';
 import { DataNode, EventDataNode, Key } from 'rc-tree/lib/interface';
-import styles from './index.less';
 import { EditingWidgetTree } from '@/utils/type';
+import styles from './index.less';
 
 
-export interface TreeProps {
+export interface ElementsProps {
+  onSelectWidget: (selectWidgetId: string | null) => void;
   editingWidgetTree: EditingWidgetTree[];
 }
 
-export const Elements = memo<TreeProps>(({ editingWidgetTree }) => {
+export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget}) => {
   const treeData: DataNode[] = useTreeData(editingWidgetTree);
 
   const onDragEnter = (info: NodeDragEventParams & {expandedKeys: Key[]}) => {
@@ -33,7 +34,16 @@ export const Elements = memo<TreeProps>(({ editingWidgetTree }) => {
     // });
   };
 
-
+  const onSelect = useCallback((selectedKeys: Key[], info: {
+    event: 'select';
+    selected: boolean;
+    node: EventDataNode;
+    selectedNodes: DataNode[];
+    nativeEvent: MouseEvent;
+  }) => {
+    onSelectWidget(selectedKeys[0] as string ?? null );
+    console.log(selectedKeys);
+  }, [onSelectWidget])
 
   return (
     <div className={styles.tree}>
@@ -43,6 +53,7 @@ export const Elements = memo<TreeProps>(({ editingWidgetTree }) => {
         blockNode
         onDragEnter={onDragEnter}
         onDrop={onDrop}
+        onSelect={onSelect}
         treeData={treeData}
       />
     </div>

@@ -13,6 +13,6 @@ export interface EditingWidgetInfo {
 }
 
 export interface EditingWidgetTree extends EditingWidgetInfo {
-  id: number;
+  id: string;
   children: EditingWidgetTree[];
 }
