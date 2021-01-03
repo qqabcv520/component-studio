@@ -5,7 +5,6 @@ export type ExcludeProperties<T, EP> = {
   [P in Exclude<keyof T, EP>]: T[P];
 };
 
-
 export interface EditingWidgetInfo {
   widgetName: string;
   props: EditingWidgetProp[];

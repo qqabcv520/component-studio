@@ -6,16 +6,14 @@ export interface DivComponentProps {
 }
 const divStyle: CSSProperties = {
   minHeight: '20px',
-  padding: '8px'
-}
+  padding: '8px',
+};
 const DivComponent: FC<DivComponentProps> = ({ children }) => {
-  return (
-    <div style={divStyle}>{children}</div>
-  );
+  return <div style={divStyle}>{children}</div>;
 };
 
 export const divWidget = {
   widgetName: '块布局',
   widgetType: componentToWidget(DivComponent),
   widgetProps: [],
-}
+};

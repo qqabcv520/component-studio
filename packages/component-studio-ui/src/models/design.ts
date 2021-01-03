@@ -23,11 +23,12 @@ export interface EditingWidgetProp {
 
 export interface EditingWidgetModel extends EditingWidgetInfo {
   id: string;
+  sort: number;
   parentId: string | null;
 }
 
-export interface AddEditingWidgetPayload extends ExcludeProperties<EditingWidgetModel, 'id'> {
-}
+export interface AddEditingWidgetPayload
+  extends ExcludeProperties<EditingWidgetModel, 'id' | 'sort'> {}
 
 export interface AddEditingWidgetAction extends Action<'addEditingWidget'> {
   payload?: AddEditingWidgetPayload;
@@ -72,6 +73,16 @@ export interface SetPropAction extends Action<'setProp'> {
   payload?: SetPropPayload;
 }
 
+export interface MoveEditingWidgetPayload {
+  id: string;
+  targetId: string | null;
+  targetSort: number;
+}
+
+export interface MoveEditingWidgetAction extends Action<'moveEditingWidget'> {
+  payload?: MoveEditingWidgetPayload;
+}
+
 const initState = {
   widgets: [] as WidgetGroup[],
   editingWidgetMap: Object.create(null) as { [id: string]: EditingWidgetModel },
@@ -99,6 +110,11 @@ const model: ModelType<DesignState> = {
     addEditingWidget(state = initState, { payload }: AddEditingWidgetAction): DesignState {
       if (payload) {
         const id = state.editingWidgetsIndex + 1;
+
+        const { parentId } = payload;
+        const children = Object.values(state.editingWidgetMap).filter(
+          (value) => value.parentId === parentId,
+        );
         return {
           ...state,
           editingWidgetsIndex: id,
@@ -107,6 +123,7 @@ const model: ModelType<DesignState> = {
             [id]: {
               ...payload,
               id: String(id),
+              sort: children.length,
             },
           },
         };
@@ -170,6 +187,39 @@ const model: ModelType<DesignState> = {
       }
       return state;
     },
+    moveEditingWidget(state = initState, { payload }: MoveEditingWidgetAction) {
+      if (payload) {
+        const { id, targetId, targetSort } = payload;
+        const oldEditingWidgetMap = state.editingWidgetMap;
+        const editingWidgetMap = Object.keys(oldEditingWidgetMap)
+          .map<EditingWidgetModel>((key) => {
+            const value = oldEditingWidgetMap[key];
+            if (value.id === id) {
+              return {
+                ...value,
+                parentId: targetId,
+                sort: targetSort,
+              };
+            }
+            return {
+              ...value,
+              sort:
+                value.sort >= targetSort && value.parentId === targetId ? value.sort + 1 : value.sort,
+            };
+          })
+          .reduce((previousValue, currentValue) => {
+            const map = previousValue;
+            map[currentValue.id] = currentValue;
+            return map;
+          }, Object.create(null) as { [id: string]: EditingWidgetModel });
+        console.log(editingWidgetMap);
+        return {
+          ...state,
+          editingWidgetMap,
+        };
+      }
+      return state;
+    },
   },
   effects: {
     *newEditingWidget(action: NewEditingWidgetAction, effects) {
@@ -177,7 +227,6 @@ const model: ModelType<DesignState> = {
       const parentId = action.payload?.parentId ?? null;
       if (widgetInfo) {
         let props: EditingWidgetProp[] = [];
-
         // eslint-disable-next-line no-restricted-syntax
         for (const widgetProp of widgetInfo.widgetProps) {
           yield effects.put<AddPropToMapAction>({
@@ -200,8 +249,8 @@ const model: ModelType<DesignState> = {
             props,
             widgetType: widgetInfo.widgetType,
             widgetName: widgetInfo.widgetName,
-            parentId
-          }
+            parentId,
+          },
         });
       }
     },

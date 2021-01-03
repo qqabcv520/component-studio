@@ -21,32 +21,35 @@ export const Screen: React.FC<ScreenProps> = ({
   editingWidgetInstanceMap,
   onSelectWidget,
 }) => {
-  // const [target, setTarget] = useState<Element | null>(null);
   const coverRef = useRef<HTMLDivElement>(null);
   const screenRef = useRef<HTMLDivElement>(null);
 
   const elements = useEditingWidget(editingWidgetTree, propMap, setEditingWidgetRef);
 
-  const style = useMemo( () => {
-    const selectedEditingWidgetInstance = selectedWidgetId ? editingWidgetInstanceMap[selectedWidgetId] : null;
+  const style = useMemo(() => {
+    const selectedEditingWidgetInstance = selectedWidgetId
+      ? editingWidgetInstanceMap[selectedWidgetId]
+      : null;
     const { left = 0, top = 0, height = 0, width = 0 } =
-    selectedEditingWidgetInstance?.wrapperRef?.getBoundingClientRect() ?? {};
+      selectedEditingWidgetInstance?.wrapperRef?.getBoundingClientRect() ?? {};
     const { left: screenLeft = 0, top: screenTop = 0 } =
-    screenRef.current?.getBoundingClientRect() ?? {};
+      screenRef.current?.getBoundingClientRect() ?? {};
     return {
       left: `${left - screenLeft}px`,
       top: `${top - screenTop}px`,
       height: `${height}px`,
       width: `${width}px`,
     };
-    }, [selectedWidgetId, editingWidgetInstanceMap]
-  );
+  }, [selectedWidgetId, editingWidgetInstanceMap]);
 
-  const onMouseDown = useCallback((e: React.MouseEvent<Element, MouseEvent>) => {
-    const target = e.target as Element;
-    const { id = null } = getSelectedWidget(editingWidgetInstanceMap, target) ?? {};
-    onSelectWidget(id)
-  }, [editingWidgetInstanceMap, onSelectWidget]);
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent<Element, MouseEvent>) => {
+      const target = e.target as Element;
+      const { id = null } = getSelectedWidget(editingWidgetInstanceMap, target) ?? {};
+      onSelectWidget(id);
+    },
+    [editingWidgetInstanceMap, onSelectWidget],
+  );
 
   return (
     <div ref={screenRef} className={styles.screen} onMouseDown={onMouseDown}>
@@ -91,8 +94,7 @@ function useEditingWidget(
   setEditingWidgetRef: (payload: SetEditingWidgetInstancePayload) => void,
 ): JSX.Element[] {
   return useMemo(() => {
-    const a = recursiveEditingWidgetTree(editingWidgetTree, propMap, setEditingWidgetRef);
-    return a;
+    return recursiveEditingWidgetTree(editingWidgetTree, propMap, setEditingWidgetRef);
   }, [editingWidgetTree, propMap]);
 }
 

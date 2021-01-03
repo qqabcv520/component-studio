@@ -3,10 +3,10 @@ import '../../accets/style/index.less';
 import { connect, ConnectProps } from 'umi';
 import {
   DesignState,
-  EditingWidgetModel,
+  EditingWidgetModel, MoveEditingWidgetPayload,
   NewEditingWidgetPayload,
   SetEditingWidgetInstancePayload,
-  SetPropPayload
+  SetPropPayload,
 } from '@/models/design';
 import { WidgetInfo } from 'component-studio-core';
 import { Elements } from '@/pages/design-page/elements';
@@ -17,7 +17,6 @@ import { Header } from './header';
 import { Screen } from './screen';
 import { Menu } from './menu';
 
-
 const DesignPage: FC<ConnectProps & DesignState> = ({
   widgets,
   editingWidgetMap,
@@ -26,17 +25,20 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
   selectedWidgetId,
   dispatch,
 }) => {
-  const onWidgetAdd = useCallback((widget: WidgetInfo) => {
-    if (dispatch) {
-      dispatch<NewEditingWidgetPayload>({
-        type: 'design/newEditingWidget',
-        payload: {
-          parentId: selectedWidgetId,
-          widget,
-        },
-      });
-    }
-  }, [selectedWidgetId]);
+  const onWidgetAdd = useCallback(
+    (widget: WidgetInfo) => {
+      if (dispatch) {
+        dispatch<NewEditingWidgetPayload>({
+          type: 'design/newEditingWidget',
+          payload: {
+            parentId: selectedWidgetId,
+            widget,
+          },
+        });
+      }
+    },
+    [selectedWidgetId],
+  );
   const onSelectWidget = useCallback((selectWidgetId: string | null) => {
     if (dispatch) {
       dispatch<string | null>({
@@ -66,8 +68,25 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
       });
     }
   }, []);
+
+  const onEditingWidgetDrop = useCallback((params: {
+    id: string;
+    targetId: string | null;
+    targetSort: number;
+  }) => {
+    if (dispatch) {
+      console.log('moveEditingWidget', params);
+      dispatch<MoveEditingWidgetPayload>({
+        type: 'design/moveEditingWidget',
+        payload: params,
+      });
+    }
+  }, []);
   const editingWidgetTree = useEditingWidgetTree(editingWidgetMap);
-  const selectedWidget = useMemo(() => selectedWidgetId ? editingWidgetMap[selectedWidgetId] : null, [editingWidgetMap, selectedWidgetId]);
+  const selectedWidget = useMemo(
+    () => (selectedWidgetId ? editingWidgetMap[selectedWidgetId] : null),
+    [editingWidgetMap, selectedWidgetId],
+  );
   return (
     <div className={styles.main}>
       <Header />
@@ -82,7 +101,13 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
           editingWidgetInstanceMap={editingWidgetInstanceMap}
         />
         <Menu selectedWidget={selectedWidget} propMap={propMap} setProp={setProp} />
-        <Elements editingWidgetTree={editingWidgetTree} onSelectWidget={onSelectWidget} selectedWidgetId={selectedWidgetId}/>
+        <Elements
+          editingWidgetTree={editingWidgetTree}
+          onSelectWidget={onSelectWidget}
+          selectedWidgetId={selectedWidgetId}
+          onEditingWidgetDrop={onEditingWidgetDrop}
+          editingWidgetMap={editingWidgetMap}
+        />
       </div>
     </div>
   );
@@ -90,10 +115,13 @@ const DesignPage: FC<ConnectProps & DesignState> = ({
 
 export default connect(({ design }: { design: DesignState }) => design)(DesignPage);
 
-function recursiveEditingWidgetTree(parentIdMap: Map<string | null, EditingWidgetModel[]>, id: string | null = null): EditingWidgetTree[] {
-  return(parentIdMap.get(id) ?? []).map<EditingWidgetTree>(({ parentId, ...otherProps }) => ({
+function recursiveEditingWidgetTree(
+  parentIdMap: Map<string | null, EditingWidgetModel[]>,
+  id: string | null = null,
+): EditingWidgetTree[] {
+  return (parentIdMap.get(id) ?? []).sort((a, b) => a.sort - b.sort).map<EditingWidgetTree>(({ parentId, ...otherProps }) => ({
     ...otherProps,
-    children: recursiveEditingWidgetTree(parentIdMap, otherProps.id)
+    children: recursiveEditingWidgetTree(parentIdMap, otherProps.id),
   }));
 }
 function useEditingWidgetTree(editingWidgetMap: { [id: string]: EditingWidgetModel }) {

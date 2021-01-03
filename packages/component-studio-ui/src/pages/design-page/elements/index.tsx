@@ -4,36 +4,61 @@ import { NodeDragEventParams } from 'rc-tree/lib/contextTypes';
 import { DataNode, EventDataNode, Key } from 'rc-tree/lib/interface';
 import { EditingWidgetTree } from '@/utils/type';
 import styles from './index.less';
+import { EditingWidgetModel } from '@/models/design';
 
 
 export interface ElementsProps {
   onSelectWidget: (selectWidgetId: string | null) => void;
   selectedWidgetId: string | null;
+  editingWidgetMap: { [id: string]: EditingWidgetModel },
   editingWidgetTree: EditingWidgetTree[];
+  onEditingWidgetDrop: (params: {
+    id: string;
+    targetId: string | null;
+    targetSort: number;
+  }) => void;
 }
 
-export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget, selectedWidgetId}) => {
+export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget, selectedWidgetId, onEditingWidgetDrop, editingWidgetMap}) => {
   const treeData: DataNode[] = useTreeData(editingWidgetTree);
 
-  const onDragEnter = (info: NodeDragEventParams & {expandedKeys: Key[]}) => {
-    console.log(info);
-    // expandedKeys 需要受控时设置
-    // this.setState({
-    //   expandedKeys: info.expandedKeys,
-    // });
-  };
-  const onDrop = (info: NodeDragEventParams & {
+  const onDrop = useCallback((info: NodeDragEventParams & {
     dragNode: EventDataNode;
     dragNodesKeys: Key[];
     dropPosition: number;
     dropToGap: boolean;
   }) => {
+    console.log(info.event.type);
     console.log(info);
-    // expandedKeys 需要受控时设置
-    // this.setState({
-    //   expandedKeys: info.expandedKeys,
-    // });
-  };
+    if (info.event.type === 'drop') {
+      const id = info.dragNode.key as string;
+      const dropId = info.node.key as string;
+      const dropPos = info.node.pos.split('-');
+      const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+      console.log('editingWidgetMap', editingWidgetMap);
+      if (!info.dropToGap) {
+        const targetId = dropId;
+        const targetSort = 0;
+        onEditingWidgetDrop({ id, targetId, targetSort })
+      } else if (dropPosition === 1) {
+        const targetId = editingWidgetMap[dropId].parentId;
+        const targetSort = editingWidgetMap[dropId].sort + 1;
+        onEditingWidgetDrop({ id, targetId, targetSort })
+      } else if (dropPosition === 0) {
+        const targetId = dropId;
+        const targetSort = 0;
+        onEditingWidgetDrop({ id, targetId, targetSort })
+      } else if (dropPosition === -1) {
+        const targetId = null;
+        const targetSort = 0;
+        onEditingWidgetDrop({ id, targetId, targetSort })
+      } else {
+        throw Error(`错误，意料之外的dropPosition值：${dropPosition}`);
+      }
+
+      console.log('dropPosition', dropPosition);
+    }
+  }, [onEditingWidgetDrop, editingWidgetMap]);
 
   const onSelect = useCallback((selectedKeys: Key[], info: {
     event: 'select';
@@ -43,18 +68,16 @@ export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget
     nativeEvent: MouseEvent;
   }) => {
     onSelectWidget(selectedKeys[0] as string ?? null );
-    console.log(selectedKeys);
   }, [onSelectWidget])
 
   const selectedKeys = useMemo(() => selectedWidgetId ? [selectedWidgetId] : [], [selectedWidgetId]);
-  console.log(selectedKeys);
   return (
     <div className={styles.tree}>
       <Tree
         className="draggable-tree"
         draggable
         blockNode
-        onDragEnter={onDragEnter}
+        showLine={{showLeafIcon: false}}
         onDrop={onDrop}
         onSelect={onSelect}
         treeData={treeData}
@@ -69,7 +92,7 @@ export function useTreeData(editingWidgets: EditingWidgetTree[]): DataNode[] {
   function recursive(widgets: EditingWidgetTree[]): DataNode[] {
     return widgets.map(value => ({
       key: value.id,
-      title: value.widgetName,
+      title: `${value.widgetName} : ${value.id}`,
       children: value.children && recursive(value.children)
     }));
   }

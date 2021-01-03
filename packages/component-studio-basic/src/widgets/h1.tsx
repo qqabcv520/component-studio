@@ -6,14 +6,11 @@ export interface H1ComponentProps {
   content?: string;
 }
 const h1Style: CSSProperties = {
-  minHeight: '20px'
-}
-const H1Component: FC<H1ComponentProps> = ({ content }) => {
-  return (
-    <h1 style={h1Style}>{content}</h1>
-  );
+  minHeight: '20px',
 };
-
+const H1Component: FC<H1ComponentProps> = ({ content }) => {
+  return <h1 style={h1Style}>{content}</h1>;
+};
 
 export const h1Widget = {
   widgetName: '标题',
@@ -25,4 +22,4 @@ export const h1Widget = {
       defaultValue: 'text',
     },
   ],
-}
+};
