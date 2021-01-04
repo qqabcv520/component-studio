@@ -28,14 +28,11 @@ export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget
     dropPosition: number;
     dropToGap: boolean;
   }) => {
-    console.log(info.event.type);
-    console.log(info);
     if (info.event.type === 'drop') {
       const id = info.dragNode.key as string;
       const dropId = info.node.key as string;
       const dropPos = info.node.pos.split('-');
       const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
-      console.log('editingWidgetMap', editingWidgetMap);
       if (!info.dropToGap) {
         const targetId = dropId;
         const targetSort = 0;
@@ -53,10 +50,8 @@ export const Elements = memo<ElementsProps>(({ editingWidgetTree, onSelectWidget
         const targetSort = 0;
         onEditingWidgetDrop({ id, targetId, targetSort })
       } else {
-        throw Error(`错误，意料之外的dropPosition值：${dropPosition}`);
+        throw Error(`意料之外的dropPosition值：${dropPosition}`);
       }
-
-      console.log('dropPosition', dropPosition);
     }
   }, [onEditingWidgetDrop, editingWidgetMap]);
 

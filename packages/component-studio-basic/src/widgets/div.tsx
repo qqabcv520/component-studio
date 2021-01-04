@@ -1,5 +1,5 @@
 import React, { CSSProperties, FC } from 'react';
-import { componentToWidget } from 'component-studio-core';
+import { componentToWidget, WidgetInfo } from 'component-studio-core';
 
 export interface DivComponentProps {
   content?: string;
@@ -12,7 +12,7 @@ const DivComponent: FC<DivComponentProps> = ({ children }) => {
   return <div style={divStyle}>{children}</div>;
 };
 
-export const divWidget = {
+export const divWidget: WidgetInfo = {
   widgetName: '块布局',
   widgetType: componentToWidget(DivComponent),
   widgetProps: [],

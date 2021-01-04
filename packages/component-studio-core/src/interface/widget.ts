@@ -43,7 +43,7 @@ export function componentToWidget<P>(
       // eslint-disable-next-line react/no-find-dom-node
       const node = findDOMNode(this);
       if (!(node instanceof Element)) {
-        throw Error('组件必须根节点必须是Element');
+        return;
       }
       this.wrapperRef = node;
     }
