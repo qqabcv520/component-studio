@@ -17,7 +17,7 @@ const MenuBlock = memo<MenuBlockProps>(({ prop, propMap, setProp }) => {
   );
 
   return <div className={styles.menuBlock}>
-    <div>{prop.propName}: </div>
+    <div>{prop.propName}：</div>
     <prop.propType.Parser value={propMap[prop.propKey]} onChange={onChange} />
   </div>;
 });
