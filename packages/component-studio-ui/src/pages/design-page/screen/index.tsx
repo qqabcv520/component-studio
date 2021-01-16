@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, { memo, useCallback, useMemo, useRef } from 'react';
 import { SetEditingWidgetInstancePayload } from '@/models/design';
 import { WidgetComponent } from 'component-studio-core';
 import { EditingWidgetTree } from '@/utils/type';
@@ -13,51 +13,53 @@ export interface ScreenProps {
   propMap: { [key: string]: unknown };
 }
 
-export const Screen: React.FC<ScreenProps> = ({
-  editingWidgetTree,
-  selectedWidgetId,
-  propMap,
-  setEditingWidgetRef,
-  editingWidgetInstanceMap,
-  onSelectWidget,
-}) => {
-  const coverRef = useRef<HTMLDivElement>(null);
-  const screenRef = useRef<HTMLDivElement>(null);
+export const Screen: React.FC<ScreenProps> = memo(
+  ({
+    editingWidgetTree,
+    selectedWidgetId,
+    propMap,
+    setEditingWidgetRef,
+    editingWidgetInstanceMap,
+    onSelectWidget,
+  }) => {
+    const coverRef = useRef<HTMLDivElement>(null);
+    const screenRef = useRef<HTMLDivElement>(null);
 
-  const elements = useEditingWidget(editingWidgetTree, propMap, setEditingWidgetRef);
+    const elements = useEditingWidget(editingWidgetTree, propMap, setEditingWidgetRef);
 
-  const style = useMemo(() => {
-    const selectedEditingWidgetInstance = selectedWidgetId
-      ? editingWidgetInstanceMap[selectedWidgetId]
-      : null;
-    const { left = 0, top = 0, height = 0, width = 0 } =
-      selectedEditingWidgetInstance?.wrapperRef?.getBoundingClientRect() ?? {};
-    const { left: screenLeft = 0, top: screenTop = 0 } =
-      screenRef.current?.getBoundingClientRect() ?? {};
-    return {
-      left: `${left - screenLeft}px`,
-      top: `${top - screenTop}px`,
-      height: `${height}px`,
-      width: `${width}px`,
-    };
-  }, [selectedWidgetId, editingWidgetInstanceMap]);
+    const style = useMemo(() => {
+      const selectedEditingWidgetInstance = selectedWidgetId
+        ? editingWidgetInstanceMap[selectedWidgetId]
+        : null;
+      const { left = 0, top = 0, height = 0, width = 0 } =
+        selectedEditingWidgetInstance?.wrapperRef?.getBoundingClientRect() ?? {};
+      const { left: screenLeft = 0, top: screenTop = 0 } =
+        screenRef.current?.getBoundingClientRect() ?? {};
+      return {
+        left: `${left - screenLeft}px`,
+        top: `${top - screenTop}px`,
+        height: `${height}px`,
+        width: `${width}px`,
+      };
+    }, [selectedWidgetId, editingWidgetInstanceMap]);
 
-  const onMouseDown = useCallback(
-    (e: React.MouseEvent<Element, MouseEvent>) => {
-      const target = e.target as Element;
-      const { id = null } = getSelectedWidget(editingWidgetInstanceMap, target) ?? {};
-      onSelectWidget(id);
-    },
-    [editingWidgetInstanceMap, onSelectWidget],
-  );
+    const onMouseDown = useCallback(
+      (e: React.MouseEvent<Element, MouseEvent>) => {
+        const target = e.target as Element;
+        const { id = null } = getSelectedWidget(editingWidgetInstanceMap, target) ?? {};
+        onSelectWidget(id);
+      },
+      [editingWidgetInstanceMap, onSelectWidget],
+    );
 
-  return (
-    <div ref={screenRef} className={styles.screen} onMouseDown={onMouseDown}>
-      <div>{elements}</div>
-      <div ref={coverRef} className={styles.cover} style={style} />
-    </div>
-  );
-};
+    return (
+      <div ref={screenRef} className={styles.screen} onMouseDown={onMouseDown}>
+        <div>{elements}</div>
+        <div ref={coverRef} className={styles.cover} style={style} />
+      </div>
+    );
+  },
+);
 
 function recursiveEditingWidgetTree(
   editingWidgetTree: EditingWidgetTree[],

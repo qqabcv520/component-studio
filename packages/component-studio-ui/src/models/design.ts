@@ -204,7 +204,9 @@ const model: ModelType<DesignState> = {
             return {
               ...value,
               sort:
-                value.sort >= targetSort && value.parentId === targetId ? value.sort + 1 : value.sort,
+                value.sort >= targetSort && value.parentId === targetId
+                  ? value.sort + 1
+                  : value.sort,
             };
           })
           .reduce((previousValue, currentValue) => {

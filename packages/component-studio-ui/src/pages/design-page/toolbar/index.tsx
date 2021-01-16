@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { memo, useCallback } from 'react';
 import { Collapse, CollapsePanel } from '@/components/collapse';
 import { WidgetGroup, WidgetInfo } from 'component-studio-core';
 import styles from './index.less';
@@ -27,7 +27,7 @@ export interface ToolbarProps {
   onWidgetAdd: (widget: WidgetInfo) => void;
 }
 
-export const Toolbar: React.FC<ToolbarProps> = ({ widgets, onWidgetAdd }) => {
+export const Toolbar: React.FC<ToolbarProps> = memo(({ widgets, onWidgetAdd }) => {
   return (
     <div className={styles.toolbar}>
       <Collapse>
@@ -48,4 +48,4 @@ export const Toolbar: React.FC<ToolbarProps> = ({ widgets, onWidgetAdd }) => {
       </Collapse>
     </div>
   );
-};
+});
